@@ -113,7 +113,7 @@ const char kTarifName[] PROGMEM =
 // tariff values for standard mode
 #define TELEINFO_STD_TARIFF_BASE    PSTR("BASE")
 #define TELEINFO_STD_TARIFF_HC      PSTR("HEURE CREUSE")
-#define TELEINFO_STD_TARIFF_HP      PSTR("HEURE PLEINE") 
+#define TELEINFO_STD_TARIFF_HP      PSTR("HEURE PLEINE")
 
 
 // Label used to do some post processing and/or calculation
@@ -122,7 +122,7 @@ enum TInfoLabel{
     LABEL_ADCO, LABEL_ADSC,
     LABEL_HCHC, LABEL_HCHP, LABEL_EAST, LABEL_EASF01, LABEL_EASF02,
     LABEL_OPTARIF, LABEL_NGTF, LABEL_ISOUSC, LABEL_PREF, LABEL_PTEC, LABEL_LTARF, LABEL_NTARF,
-    LABEL_PAPP, LABEL_SINSTS, LABEL_IINST, LABEL_IINST1, LABEL_IINST2, LABEL_IINST3, LABEL_IRMS1, LABEL_IRMS2, LABEL_IRMS3,  
+    LABEL_PAPP, LABEL_SINSTS, LABEL_IINST, LABEL_IINST1, LABEL_IINST2, LABEL_IINST3, LABEL_IRMS1, LABEL_IRMS2, LABEL_IRMS3,
     LABEL_TENSION, LABEL_URMS1, LABEL_URMS2, LABEL_URMS3,
     LABEL_IMAX, LABEL_IMAX1, LABEL_IMAX2, LABEL_IMAX3, LABEL_PMAX, LABEL_SMAXSN,
     LABEL_DEMAIN,
@@ -139,10 +139,10 @@ const char kLabel[] PROGMEM =
     "|DEMAIN"
     ;
 
-// Blacklisted label from telemetry 
+// Blacklisted label from telemetry
 // Each label shoud be enclosed by pipe
 #ifdef ESP8266
-// dclared as progmem  for ESP8266 crash on strstr 
+// dclared as progmem  for ESP8266 crash on strstr
 const char kLabelBlacklist[]  =
 #else
 const char kLabelBlacklist[] PROGMEM =
@@ -249,7 +249,7 @@ void DataCallback(struct _ValueList * me, uint8_t  flags)
             float volt = (float) atoi(me->value);
             AddLog(LOG_LEVEL_DEBUG, PSTR("TIC: Voltage %s=%s, now %d"), me->name, me->value, (int) volt);
 
-            if ( ilabel == LABEL_URMS2) {  
+            if ( ilabel == LABEL_URMS2) {
                 Energy.voltage[1] = volt;
             } else if ( ilabel == LABEL_URMS3) {
                 Energy.voltage[2] = volt;
@@ -259,7 +259,7 @@ void DataCallback(struct _ValueList * me, uint8_t  flags)
         }
 
         // Current I phase 1 to 3
-        else if (ilabel == LABEL_IINST 
+        else if (ilabel == LABEL_IINST
                     || ilabel == LABEL_IINST1 || ilabel == LABEL_IRMS1
                     || ilabel == LABEL_IINST2 || ilabel == LABEL_IRMS2
                     || ilabel == LABEL_IINST3 || ilabel == LABEL_IRMS3  )
@@ -309,11 +309,11 @@ void DataCallback(struct _ValueList * me, uint8_t  flags)
             // Current tariff (standard)
             else if (ilabel == LABEL_LTARF)
             {
-                if (!strcmp_P(TELEINFO_STD_TARIFF_BASE, me->value)) {
+                if (!strcmp_P(me->value, TELEINFO_STD_TARIFF_BASE)) {
                     tarif = TARIF_TH;
-                } else if (!strcmp_P(TELEINFO_STD_TARIFF_HC, me->value)) {
+                } else if (!strcmp_P(me->value,TELEINFO_STD_TARIFF_HC)) {
                     tarif = TARIF_HC;
-                } else if (!strcmp_P(TELEINFO_STD_TARIFF_HP, me->value)) {
+                } else if (!strcmp_P(me->value,TELEINFO_STD_TARIFF_HP)) {
                     tarif = TARIF_HP;
                 }
                 AddLog(LOG_LEVEL_DEBUG, PSTR("TIC: Tariff name changed, now '%s'"), me->value);
@@ -400,9 +400,9 @@ void DataCallback(struct _ValueList * me, uint8_t  flags)
             // Contract subscribed (standard is in clear text in value)
             else if (ilabel == LABEL_NGTF)
             {
-                if (!strcmp_P(TELEINFO_STD_CONTRACT_BASE, me->value)) {
-                    contrat = CONTRAT_BAS;
-                } else if (!strcmp_P(TELEINFO_STD_CONTRACT_HCHP, me->value)) {
+                if (!strcmp_P(me->value,TELEINFO_STD_CONTRACT_BASE)) {
+                   contrat = CONTRAT_BAS;
+                } else if (!strcmp_P(me->value,TELEINFO_STD_CONTRACT_HCHP)) {
                     contrat = CONTRAT_HC;
                 }
 
@@ -537,7 +537,7 @@ void NewFrameCallback(struct _ValueList * me)
             // send teleinfo full frame or only changed data
             bool hasData = ResponseAppendTInfo(' ', Settings.teleinfo.raw_report_changed ? false : true );
             ResponseJsonEndEnd();
-            
+
             // Publish adding ADCO serial number into the topic
             // Need setOption4 to be enabled
             // No need to send empty payload
@@ -566,7 +566,7 @@ void TInfoDrvInit(void) {
     if (PinUsed(GPIO_TELEINFO_RX)) {
         tic_rx_pin = Pin(GPIO_TELEINFO_RX);
     } else {
-        // Case we are on denky V4 board without any TInfo RX pin selected 
+        // Case we are on denky V4 board without any TInfo RX pin selected
         #ifdef ARDUINO_DENKY_PICOV3
             tic_rx_pin = 8;
             AddLog(LOG_LEVEL_INFO, PSTR("TIC: Denky D4 board, RX on GPIO%d"), tic_rx_pin);
@@ -645,7 +645,7 @@ void TInfoInit(void)
             //SetSerialConfig(TS_SERIAL_7E1);
             //TInfoSerial->setTimeout(TINFO_READ_TIMEOUT);
 
-            AddLog(LOG_LEVEL_INFO, PSTR("TIC: using hardware serial"));
+            AddLog(LOG_LEVEL_INFO, PSTR("TIC: using hardware serial (buffer:%d)"), uart_get_rx_buffer_size(Serial._uart));
         } else {
             AddLog(LOG_LEVEL_INFO, PSTR("TIC: using software serial"));
         }
@@ -667,7 +667,7 @@ void TInfoInit(void)
             AddLog(LOG_LEVEL_INFO, PSTR("TIC: Raw mode enabled"));
             if (raw_skip) {
                 AddLog(LOG_LEVEL_INFO, PSTR("TIC: Sending only one frame over %d "), raw_skip+1);
-            } 
+            }
         }
         AddLog(LOG_LEVEL_INFO, PSTR("TIC: Ready"));
     }
@@ -692,7 +692,7 @@ bool TInfoCmd(void) {
         AddLog_P(LOG_LEVEL_DEBUG, PSTR("TIC: len %d, data '%s'"), XdrvMailbox.data_len, XdrvMailbox.data ? XdrvMailbox.data : "null" );
 
         // Just "EnergyConfig" no more parameter
-        // Show Teleinfo configuration        
+        // Show Teleinfo configuration
         if (XdrvMailbox.data_len == 0) {
 
             char mode_name[MAX_TINFO_COMMAND_NAME];
@@ -701,7 +701,7 @@ bool TInfoCmd(void) {
             int index_raw = Settings.teleinfo.raw_send ? CMND_TELEINFO_RAW_FULL : CMND_TELEINFO_RAW_DISABLE;
             if (Settings.teleinfo.raw_send && Settings.teleinfo.raw_report_changed) {
                 index_raw = CMND_TELEINFO_RAW_CHANGE;
-            } 
+            }
             // Get the mode and raw name
             GetTextIndexed(mode_name, MAX_TINFO_COMMAND_NAME, index_mode, kTInfo_Commands);
             GetTextIndexed(raw_name, MAX_TINFO_COMMAND_NAME, index_raw, kTInfo_Commands);
@@ -710,7 +710,7 @@ bool TInfoCmd(void) {
 
             serviced = true;
 
-        // At least "EnergyConfig xyz" plus one space and one (or more) char 
+        // At least "EnergyConfig xyz" plus one space and one (or more) char
         // so "EnergyConfig 0" or "EnergyConfig Teleinfo Standard"
         } else if (XdrvMailbox.data_len) {
             // Now point on parameter
@@ -747,7 +747,7 @@ bool TInfoCmd(void) {
                     if ( (tinfo_mode==TINFO_MODE_STANDARD && command_code==CMND_TELEINFO_HISTORIQUE) ||
                          (tinfo_mode==TINFO_MODE_HISTORIQUE && command_code==CMND_TELEINFO_STANDARD) ) {
 
-                        // Cleanup Serial not sure it will works since 
+                        // Cleanup Serial not sure it will works since
                         // there is no end() or close() on tasmotaserial class
                         if (TInfoSerial) {
                             TInfoSerial->flush();
@@ -755,7 +755,7 @@ bool TInfoCmd(void) {
                             free(TInfoSerial);
                         }
 
-                        // Change mode 
+                        // Change mode
                         Settings.teleinfo.mode_standard = command_code == CMND_TELEINFO_STANDARD ? 1 : 0;
 
                         AddLog_P(LOG_LEVEL_INFO, PSTR("TIC: '%s' mode"), mode_name);
@@ -771,10 +771,10 @@ bool TInfoCmd(void) {
                 }
                 break;
 
-                case CMND_TELEINFO_RAW_DISABLE: 
-                case CMND_TELEINFO_RAW_FULL: 
+                case CMND_TELEINFO_RAW_DISABLE:
+                case CMND_TELEINFO_RAW_FULL:
                 case CMND_TELEINFO_RAW_CHANGE: {
-            
+
                    // Enable all RAW frame send
                    char raw_name[MAX_TINFO_COMMAND_NAME];
 
@@ -916,7 +916,7 @@ void TInfoShow(bool json)
             ResponseAppend_P(PSTR(",\"Load\":%d"),(int) ((Energy.current[0]*100.0f) / isousc));
         }
 
-        // add teleinfo full frame 
+        // add teleinfo full frame
         ResponseAppendTInfo(',', true);
 
 #ifdef USE_WEBSERVER
@@ -924,7 +924,7 @@ void TInfoShow(bool json)
     else
     {
         char name[33];
-        char value[33]; 
+        char value[33];
         int percent;
 
         if (isousc) {
@@ -941,7 +941,7 @@ void TInfoShow(bool json)
                 // Hue from 128 (green) to 0 (red) so reversed from percent
                 hue = changeUIntScale(100-percent, 0, 100, 0, 128);
                 HsToRgb(hue, 128, &red, &green, &blue);
-                snprintf_P(phase_color, sizeof(phase_color), PSTR("#%02X%02X%02X"), red, green, blue);  
+                snprintf_P(phase_color, sizeof(phase_color), PSTR("#%02X%02X%02X"), red, green, blue);
                 WSContentSend_P(HTTP_ENERGY_LOAD_BAR, phase_color, percent, percent);
             }
         }
